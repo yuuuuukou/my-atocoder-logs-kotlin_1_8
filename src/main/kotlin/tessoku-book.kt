@@ -1,4 +1,5 @@
 import kotlin.math.max
+import kotlin.math.min
 
 private val reader = System.`in`.bufferedReader()
 private fun readString() = reader.readLine()
@@ -13,7 +14,55 @@ private fun readBigDecimal() = readString().toBigDecimal()
 private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() }.toMutableList()
 
 fun main(args: Array<String>) {
-    solveTessokuBookA19()
+    solveTessokuBookB19()
+}
+
+fun solveTessokuBookB19() {
+    val (n, w) = readInts()
+
+    // 価値の組み合わせをdpで網羅して、それを大きい方から全探索して重量が問題ないものを選ぶ
+    val maxValue = n * 1000
+    val dp = MutableList(n + 1) { MutableList<Long?>(maxValue + 1) { null } }
+    dp[0][0] = 0
+    for (i in 1..n) {
+        val (wi, vi) = readLongs()
+        for (j in 0..maxValue) {
+            // 選ばない場合
+            if (dp[i][j] == null) {
+                if (dp[i - 1][j] == null) {
+                    // 変更不要
+                } else {
+                    dp[i][j] = dp[i - 1][j]
+                }
+            } else {
+                if (dp[i - 1][j] == null) {
+                    // 変更不要
+                } else {
+                    dp[i][j] = min(dp[i][j]!!, dp[i - 1][j]!!)
+                }
+            }
+
+            // 選ぶ場合
+            if (j - vi.toInt() >= 0 && dp[i - 1][j - vi.toInt()] != null) {
+                if (dp[i][j] == null) {
+                    dp[i][j] = dp[i - 1][j - vi.toInt()]!! + wi
+                } else {
+                    dp[i][j] = min(dp[i][j]!!, dp[i - 1][j - vi.toInt()]!! + wi)
+                }
+            }
+        }
+    }
+
+    var res = 0
+    for (i in 0..n) {
+        for (j in 0..maxValue) {
+            if (dp[i][j] != null && dp[i][j]!! <= w) {
+                res = max(res, j)
+            }
+        }
+    }
+
+    println(res)
 }
 
 fun solveTessokuBookA19() {
@@ -44,8 +93,8 @@ fun solveTessokuBookA19() {
     }
 
     var res = 0L
-    for (i in 0 .. n) {
-        for (j in 0 .. w) {
+    for (i in 0..n) {
+        for (j in 0..w) {
             res = max(res, dp[i][j])
         }
     }
