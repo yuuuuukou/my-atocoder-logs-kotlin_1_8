@@ -14,7 +14,45 @@ private fun readBigDecimal() = readString().toBigDecimal()
 private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() }.toMutableList()
 
 fun main(args: Array<String>) {
-    solveTessokuBookB19()
+    solveTessokuBookA20()
+}
+
+fun solveTessokuBookA20() {
+    val s = readString()
+    val t = readString()
+
+    val dp = MutableList(s.length + 1) { MutableList(t.length + 1) { 0 } }
+
+    for (i in 0..s.length) {
+        for (j in 0..t.length) {
+            if (i == 0) {
+                if (j == 0) {
+                    // 変更なし
+                } else {
+                    dp[i][j] = dp[i][j - 1]
+                }
+            } else {
+                if (j == 0) {
+                    dp[i][j] = dp[i - 1][j]
+                } else {
+                    if (s[i - 1] == t[j - 1]) {
+                        dp[i][j] = maxOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + 1)
+                    } else {
+                        dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                    }
+                }
+            }
+        }
+    }
+
+    var res = 0
+    for (i in 0..s.length) {
+        for (j in 0..t.length) {
+            res = max(res, dp[i][j])
+        }
+    }
+
+    println(res)
 }
 
 fun solveTessokuBookB19() {
