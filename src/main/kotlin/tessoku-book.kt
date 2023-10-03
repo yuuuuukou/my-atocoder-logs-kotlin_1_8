@@ -14,7 +14,60 @@ private fun readBigDecimal() = readString().toBigDecimal()
 private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() }.toMutableList()
 
 fun main(args: Array<String>) {
-    solveTessokuBookB20()
+    solveTessokuBookA21()
+}
+
+fun solveTessokuBookA21() {
+    val n = readInt()
+    val list = mutableListOf<Pair<Int, Int>>()
+    list.add(Pair(0, 0))
+    repeat(n) {
+        val (pi, ai) = readInts()
+        list.add(Pair(pi, ai))
+    }
+    list.add(Pair(0, 0))
+
+    val dp = MutableList(n + 1) { MutableList(n + 1) { 0 } }
+    dp[1][n] = 0
+    for (len in n - 2 downTo 0) {
+        for (l in 1..n - len) {
+            val r = l + len
+
+            val score1 = if (list[l - 1].first in l..r) {
+                list[l - 1].second
+            } else {
+                0
+            }
+            val score2 = if (list[r + 1].first in l..r) {
+                list[r + 1].second
+            } else {
+                0
+            }
+
+            if (l == 1) {
+                if (r == n) {
+                    dp[l][r] = 0
+                } else {
+                    dp[l][r] = dp[l][r + 1] + score2
+                }
+            } else {
+                if (r == n) {
+                    dp[l][r] = dp[l - 1][r] + score1
+                } else {
+                    dp[l][r] = max(dp[l - 1][r] + score1, dp[l][r + 1] + score2)
+                }
+            }
+        }
+    }
+
+    var res = 0
+    for (l in 1..n) {
+        for (r in l..l) {
+            res = max(res, dp[l][r])
+        }
+    }
+
+    println(res)
 }
 
 fun solveTessokuBookB20() {
