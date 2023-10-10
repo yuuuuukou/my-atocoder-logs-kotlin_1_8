@@ -1,5 +1,6 @@
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 private val reader = System.`in`.bufferedReader()
 private fun readString() = reader.readLine()
@@ -14,7 +15,49 @@ private fun readBigDecimal() = readString().toBigDecimal()
 private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() }.toMutableList()
 
 fun main(args: Array<String>) {
-    solveTessokuBookB22()
+    solveTessokuBookA23()
+}
+
+fun solveTessokuBookA23() {
+    val (n, m) = readInts()
+    val a = mutableListOf<MutableList<Int>>()
+    repeat(m) {
+        a.add(readInts())
+    }
+
+    val dp = MutableList(m + 1) { MutableList(2.0.pow(n).toInt()) { 1_000_000_000 } }
+    dp[0][0] = 0
+    for (i in 1..m) {
+        for (j in 0 until (2.0.pow(n).toInt())) {
+            // jの時に既に無料になっている商品をビットから算出
+            val already = MutableList(n) { 0 }
+            val jBinary = j.toString(2).padStart(n, '0').reversed()
+            for ((k, c) in jBinary.withIndex()) {
+                if (c == '1') already[k] = 1
+            }
+
+            // i番目のクーポン券を選んだ場合の整数表現を算出
+            var text = ""
+            for (k in 0 until n) {
+                if (already[k] == 1 || a[i - 1][k] == 1) {
+                    text += "1"
+                } else {
+                    text += "0"
+                }
+            }
+            val num = text.reversed().toInt(2)
+
+            // dp
+            dp[i][j] = min(dp[i][j], dp[i - 1][j])
+            dp[i][num] = min(dp[i][num], dp[i - 1][j] + 1)
+        }
+    }
+
+    if (dp[m][2.0.pow(n).toInt() - 1] == 1_000_000_000) {
+        println(-1)
+    } else {
+        println(dp[m][2.0.pow(n).toInt() - 1])
+    }
 }
 
 fun solveTessokuBookB22() {
