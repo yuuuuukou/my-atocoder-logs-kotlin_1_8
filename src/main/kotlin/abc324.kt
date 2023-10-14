@@ -25,19 +25,9 @@ fun solveABC324C() {
         s[i] = si
     }
 
-    val resMemo = mutableMapOf<String, Int>()
-    val badMemo = mutableMapOf<String, Int>()
     val res = mutableListOf<Int>()
-    var dp: MutableList<MutableList<Int>>
 
     for ((i, si) in s) {
-        // 計算済みかチェック
-        if (resMemo.contains(s[i])) {
-            res.add(i + 1)
-            continue
-        } else if (badMemo.contains(s[i])) {
-            continue
-        }
         when (t.length - si.length) {
             0 -> {
                 var diff = 0
@@ -46,36 +36,57 @@ fun solveABC324C() {
                 }
                 if (diff <= 1) {
                     res.add(i + 1)
-                    resMemo[s[i]!!] = 1
-                } else {
-                    badMemo[s[i]!!] = 1
                 }
             }
 
-            -1, 1 -> {
-                // tとsiの編集距離を計算
-                dp = MutableList(t.length + 1) { MutableList(s[i]!!.length + 1) { 0 } }
-                dp[0][0] = 0
-                for (j in 0..t.length) {
-                    for (k in 0..s[i]!!.length) {
-                        if (j >= 1 && k >= 1 && t[j - 1] == s[i]!![k - 1]) {
-                            dp[j][k] = minOf(dp[j - 1][k] + 1, dp[j][k - 1] + 1, dp[j - 1][k - 1])
-                        } else if (j >= 1 && k >= 1) {
-                            dp[j][k] = minOf(dp[j - 1][k] + 1, dp[j][k - 1] + 1, dp[j - 1][k - 1] + 1)
-                        } else if (j >= 1) {
-                            dp[j][k] = dp[j - 1][k] + 1
-                        } else if (k >= 1) {
-                            dp[j][k] = dp[j][k - 1] + 1
+            -1 -> {
+                // 文字数が少ない方をベースに走査
+                // - 多い側の最後の1文字は、そこまでが一致しているなら追加すれば一致するので無視
+                // - 1文字分はずれてもよい
+                var (diff, j, k) = arrayOf(0, 0, 0)
+                var tmpRes = true
+                while (j < t.length) {
+                    if (t[j] == si[k]) {
+                        // 一致してるなら両方のインデックスを進める
+                        j++
+                        k++
+                    } else {
+                        diff++
+                        if (diff > 1) {
+                            tmpRes = false
+                            break
                         }
+                        // 不一致の場合、j側に挿入があったとみなして、kを進める
+                        k++
+
                     }
                 }
+                if (tmpRes) res.add(i + 1)
+            }
 
-                if (dp[t.length][s[i]!!.length] <= 1) {
-                    res.add(i + 1)
-                    resMemo[s[i]!!] = 1
-                } else {
-                    badMemo[s[i]!!] = 1
+            1 -> {
+                // 文字数が少ない方をベースに走査
+                // - 多い側の最後の1文字は、そこまでが一致しているなら追加すれば一致するので無視
+                // - 1文字分はずれてもよい
+                var (diff, j, k) = arrayOf(0, 0, 0)
+                var tmpRes = true
+                while (j < si.length) {
+                    if (si[j] == t[k]) {
+                        // 一致してるなら両方のインデックスを進める
+                        j++
+                        k++
+                    } else {
+                        diff++
+                        if (diff > 1) {
+                            tmpRes = false
+                            break
+                        }
+                        // 不一致の場合、j側に挿入があったとみなして、kを進める
+                        k++
+
+                    }
                 }
+                if (tmpRes) res.add(i + 1)
             }
 
             else -> continue
