@@ -1,6 +1,7 @@
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 private val reader = System.`in`.bufferedReader()
 private fun readString() = reader.readLine()
@@ -14,8 +15,59 @@ private fun readDoubles() = readString().split(" ").map { it.toDouble() }.toMuta
 private fun readBigDecimal() = readString().toBigDecimal()
 private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() }.toMutableList()
 
+private fun Int.pow(n: Int): Int = this.toDouble().pow(n).toInt()
+
 fun main(args: Array<String>) {
-    solveTessokuBookA23()
+    solveTessokuBookB23()
+}
+
+fun solveTessokuBookB23() {
+    fun dist(xi: Int, yi: Int, xj: Int, yj: Int): Double {
+        return sqrt((xi - xj).toDouble().pow(2) + (yi - yj).toDouble().pow(2))
+    }
+
+    val n = readInt()
+    val xy = mutableListOf<Pair<Int, Int>>()
+    repeat(n) {
+        val (xi, yi) = readInts()
+        xy.add(Pair(xi, yi))
+    }
+
+    // dp[i:通った都市の集合][j:今いる都市]
+    // k:次に向かう都市 としてdp
+    val dp = MutableList(2.pow(n)) { MutableList(n + 1) { Double.MAX_VALUE } }
+    dp[0][0] = 0.0
+
+    for (i in 0 until 2.pow(n)) {
+        for (j in 0 until n) {
+            // Double.MAX_VALUE はその時点で到達不可
+            if (dp[i][j] == Double.MAX_VALUE) continue
+
+            // j -> k の移動を考える
+            for (k in 0 until n) {
+                // iを分解
+                val iBinary = i.toString(2).padStart(n, '0').reversed()
+
+                // 既にkが含まれている場合は読み飛ばす
+                if (iBinary[k] == '1') continue
+
+                var next = ""
+                for ((i, si) in iBinary.withIndex()) {
+                    if (si == '1' || i == k) {
+                        next += 1
+                    } else {
+                        next += 0
+                    }
+                }
+                val nextNum = next.reversed().toInt(2)
+
+                dp[nextNum][k] =
+                    min(dp[nextNum][k], dp[i][j] + dist(xy[j].first, xy[j].second, xy[k].first, xy[k].second))
+            }
+        }
+    }
+
+    println(dp[2.pow(n) - 1][0])
 }
 
 fun solveTessokuBookA23() {
