@@ -18,7 +18,47 @@ private fun readBigDecimals() = readString().split(" ").map { it.toBigDecimal() 
 private fun Int.pow(n: Int): Int = this.toDouble().pow(n).toInt()
 
 fun main(args: Array<String>) {
-    solveTessokuBookB23()
+    solveTessokuBookA24()
+}
+
+fun solveTessokuBookA24() {
+    /**
+     * ref: https://webbibouroku.com/Blog/Article/cs-lowerbound-upperbound
+     */
+    fun lowerBound(list: List<Int>, value: Int): Int {
+        var left = 0
+        var right = list.lastIndex
+        while (left <= right) {
+            val mid = (left + right) / 2
+            if (list[mid] < value) {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        return left
+    }
+
+    val n = readInt()
+    val a = readInts()
+
+    val dp = MutableList(n + 1) { 0 }
+    var len = 0
+    val l = mutableListOf<Int>()
+
+    for (i in 0 until n) {
+        val pos = lowerBound(l, a[i])
+        dp[i] = pos
+
+        if (dp[i] >= len) {
+            len++
+            l.add(a[i])
+        } else {
+            l[dp[i]] = a[i]
+        }
+    }
+
+    println(len)
 }
 
 fun solveTessokuBookB23() {
